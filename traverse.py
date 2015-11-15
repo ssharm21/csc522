@@ -3,7 +3,7 @@ import cv2
 import stasm
 import csv
 	
-rootDir = '/home/shivani/Pictures/cohn-kanade-images/S097/001'
+rootDir = '/home/shivani/Pictures/cohn-kanade-images-extracted/'
 csvFile = open('featuredata.csv', 'wb')
 writer = csv.writer(csvFile)
 
