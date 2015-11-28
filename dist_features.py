@@ -89,7 +89,6 @@ for root, dirs, files in os.walk("Emotion/"):
         name = _file.split("_")[0] + "_" + _file.split("_")[1]
         emotions[name] = int(text.split(".")[0])
 
-
 print "Load the comparison data"
 res_dict = pd.read_csv("compare_data.csv")
 
