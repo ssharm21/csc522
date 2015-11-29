@@ -116,7 +116,7 @@ X = []
 Y = []
 
 #colors = ['k', 'b', 'g', 'r', 'c', 'm', 'y', '0.5']
-#labels = {1: "anger", 2: "neutral", 3: "disgust", 4: "fear", 5: "happiness", 6: "sadness", 7:"surprise"}
+labels = {1: "anger", 2: "neutral", 3: "disgust", 4: "fear", 5: "happiness", 6: "sadness", 7:"surprise"}
 for i in range(1, 8):
 #	x_points = []
 #	y_points = []
@@ -180,7 +180,8 @@ print scores
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 rbf_preds = rbf_classifier.predict(X)
-print confusion_matrix(Y, rbf_preds)
+cm = confusion_matrix(Y, rbf_preds)
+print cm
 print
 print
 
@@ -216,6 +217,7 @@ print "FINAL"
 print confusion_matrix(Y, mix_preds)
 '''
 
+'''
 class EnsembleClassifier(base.BaseEstimator, base.ClassifierMixin):
     def __init__(self, classifiers=None):
         self.classifiers = classifiers
@@ -230,6 +232,10 @@ class EnsembleClassifier(base.BaseEstimator, base.ClassifierMixin):
             self.predictions_.append(classifier.predict_proba(X))
         return np.mean(self.predictions_, axis=0)
 
+    def predict(self, x):
+    	preds = self.predict_proba(x)
+    	return [ x.tolist().index(max(x))+1 for x in preds]
+
 ens = EnsembleClassifier([linear_classifier, poly_classifier, rbf_classifier, sigmoid_classifier])
 scores = cross_validation.cross_val_score(ens, X, Y, cv=5)
 print "ENSEMBLE"
@@ -241,3 +247,33 @@ ens_preds = ens.predict(X)
 print confusion_matrix(Y, ens_preds)
 print
 print
+'''
+
+
+
+#SINCE RBF IS THE BEST WE PLOT THE CONFUSION MATRIX OF THE MODEL
+
+
+def plot_confusion_matrix(cm, title='Confusion matrix', cmap=plt.cm.Reds):
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(labels.keys()))
+    plt.xticks(tick_marks, labels.values(), rotation=45)
+    plt.yticks(tick_marks, labels.values())
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
+
+plt.figure()
+plot_confusion_matrix(cm)
+
+# Normalize the confusion matrix by row (i.e by the number of samples
+# in each class)
+cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+plt.figure()
+plot_confusion_matrix(cm_normalized, title='Normalized confusion matrix')
+
+plt.show()
