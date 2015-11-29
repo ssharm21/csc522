@@ -10,6 +10,8 @@ from sklearn.decomposition import PCA
 from sklearn import svm
 from sklearn import cross_validation
 import matplotlib.patches as mpatches
+from sklearn.metrics import confusion_matrix
+from sklearn import base
 
 '''
 print "Reading the file"
@@ -134,53 +136,108 @@ for i in range(1, 8):
 
 
 print "KERNEL: linear"
-classifier = svm.SVC(kernel="linear")
-classifier.fit(X, Y) 
+linear_classifier = svm.SVC(kernel="linear", probability=True)
+linear_classifier.fit(X, Y) 
 
-scores = cross_validation.cross_val_score(classifier, X, Y, cv=5)
+scores = cross_validation.cross_val_score(linear_classifier, X, Y, cv=5)
 
 print "SCORES:"
 print scores
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+linear_preds = linear_classifier.predict(X)
+print confusion_matrix(Y, linear_preds)
 print
 print
 
 
 #FROM POLYNOMIAL PARAMS, BEST degree=2 and coef0=0.6
-print "KERNEL: poly"
-classifier = svm.SVC(kernel="poly", degree=2, coef0=0.6)
-classifier.fit(X, Y) 
+print "KERNEL: polynomial"
+poly_classifier = svm.SVC(kernel="poly", degree=2, coef0=0.6, probability=True)
+poly_classifier.fit(X, Y) 
 
-scores = cross_validation.cross_val_score(classifier, X, Y, cv=5)
+scores = cross_validation.cross_val_score(poly_classifier, X, Y, cv=5)
 
 print "SCORES:"
 print scores
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+poly_preds = poly_classifier.predict(X)
+print confusion_matrix(Y, poly_preds)
 print
 print
 
 
+#FROM RBF PARAMS, BEST gamma = 0.05
 print "KERNEL: rbf"
-classifier = svm.SVC(kernel="rbf")
-classifier.fit(X, Y) 
+rbf_classifier = svm.SVC(kernel="rbf", gamma=0.05, probability=True)
+rbf_classifier.fit(X, Y) 
 
-scores = cross_validation.cross_val_score(classifier, X, Y, cv=5)
+scores = cross_validation.cross_val_score(rbf_classifier, X, Y, cv=5)
 
 print "SCORES:"
 print scores
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+rbf_preds = rbf_classifier.predict(X)
+print confusion_matrix(Y, rbf_preds)
 print
 print
 
 
+#FROM SIGMOID PARAMS, BEST gamma=0.01 and coeff=0.0
 print "KERNEL: sigmoid"
-classifier = svm.SVC(kernel="sigmoid")
-classifier.fit(X, Y) 
+sigmoid_classifier = svm.SVC(kernel="sigmoid", gamma=0.01, coef0=0.0, probability=True)
+sigmoid_classifier.fit(X, Y) 
 
-scores = cross_validation.cross_val_score(classifier, X, Y, cv=5)
+scores = cross_validation.cross_val_score(sigmoid_classifier, X, Y, cv=5)
 
 print "SCORES:"
 print scores
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+sigmoid_preds = sigmoid_classifier.predict(X)
+print confusion_matrix(Y, sigmoid_preds)
+print
+print
+
+'''linear_preds = linear_classifier.predict_proba(X)
+poly_preds = poly_classifier.predict_proba(X)
+rbf_preds = rbf_classifier.predict_proba(X)
+sigmoid_preds = sigmoid_classifier.predict_proba(X)
+
+all_preds = zip(linear_preds, poly_preds, rbf_preds, sigmoid_preds)
+mix_preds = []
+for a,b,c,d in all_preds:
+	prob_list = [sum(x) for x in zip(a,b,c,d)]
+	res = prob_list.index(max(prob_list)) + 1
+	mix_preds.append(res)
+print "FINAL"
+print confusion_matrix(Y, mix_preds)
+'''
+
+class EnsembleClassifier(base.BaseEstimator, base.ClassifierMixin):
+    def __init__(self, classifiers=None):
+        self.classifiers = classifiers
+
+    def fit(self, X, y):
+        for classifier in self.classifiers:
+            classifier.fit(X, y)
+
+    def predict_proba(self, X):
+        self.predictions_ = list()
+        for classifier in self.classifiers:
+            self.predictions_.append(classifier.predict_proba(X))
+        return np.mean(self.predictions_, axis=0)
+
+ens = EnsembleClassifier([linear_classifier, poly_classifier, rbf_classifier, sigmoid_classifier])
+scores = cross_validation.cross_val_score(ens, X, Y, cv=5)
+print "ENSEMBLE"
+print "SCORES:"
+print scores
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+ens_preds = ens.predict(X)
+print confusion_matrix(Y, ens_preds)
 print
 print
