@@ -7,6 +7,9 @@ import pandas as pd
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
+from sklearn import svm
+from sklearn import cross_validation
+import matplotlib.patches as mpatches
 
 '''
 print "Reading the file"
@@ -89,6 +92,7 @@ for root, dirs, files in os.walk("Emotion/"):
         name = _file.split("_")[0] + "_" + _file.split("_")[1]
         emotions[name] = int(text.split(".")[0])
 
+
 print "Load the comparison data"
 res_dict = pd.read_csv("compare_data.csv")
 
@@ -99,24 +103,84 @@ np_points = np.nan_to_num(np_points)
 min_max_scaler = preprocessing.MinMaxScaler()
 x_scaled = min_max_scaler.fit_transform(np_points)
 
-pca = PCA(n_components=2)
+
+#FROM THE SCREE PLOT, BEST n_components is 5
+pca = PCA(n_components=5)
 pca.fit(x_scaled)
 pca_features = pca.transform(x_scaled)
 
 
-colors = ['k', 'b', 'g', 'r', 'c', 'm', 'y', '0.5']
-labels = {1: "anger", 2: "neutral", 3: "disgust", 4: "fear", 5: "happiness", 6: "sadness", 7:"surprise"}
+X = []
+Y = []
+
+#colors = ['k', 'b', 'g', 'r', 'c', 'm', 'y', '0.5']
+#labels = {1: "anger", 2: "neutral", 3: "disgust", 4: "fear", 5: "happiness", 6: "sadness", 7:"surprise"}
 for i in range(1, 8):
-	x_points = []
-	y_points = []
+#	x_points = []
+#	y_points = []
 	for n in res_dict["name"]:
 		if n in emotions.keys() and emotions[n] == i:
 			ind = np.where(res_dict["name"]==n)[0][0]
-			x_points.append(pca_features[ind,0])
-			y_points.append(pca_features[ind,1])
-	plt.scatter(x_points, y_points, c=colors[i], label=labels[i], s=50)
+#			x_points.append(pca_features[ind,0])
+#			y_points.append(pca_features[ind,1])
+			X.append(pca_features[ind])
+			Y.append(i)
+#	plt.scatter(x_points, y_points, c=colors[i], label=labels[i], s=50)
 
 
-plt.legend(fontsize=8)
+#plt.legend(fontsize=8)
 
-plt.show()
+#plt.show()
+
+
+print "KERNEL: linear"
+classifier = svm.SVC(kernel="linear")
+classifier.fit(X, Y) 
+
+scores = cross_validation.cross_val_score(classifier, X, Y, cv=5)
+
+print "SCORES:"
+print scores
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+print
+print
+
+
+#FROM POLYNOMIAL PARAMS, BEST degree=2 and coef0=0.6
+print "KERNEL: poly"
+classifier = svm.SVC(kernel="poly", degree=2, coef0=0.6)
+classifier.fit(X, Y) 
+
+scores = cross_validation.cross_val_score(classifier, X, Y, cv=5)
+
+print "SCORES:"
+print scores
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+print
+print
+
+
+print "KERNEL: rbf"
+classifier = svm.SVC(kernel="rbf")
+classifier.fit(X, Y) 
+
+scores = cross_validation.cross_val_score(classifier, X, Y, cv=5)
+
+print "SCORES:"
+print scores
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+print
+print
+
+
+print "KERNEL: sigmoid"
+classifier = svm.SVC(kernel="sigmoid")
+classifier.fit(X, Y) 
+
+scores = cross_validation.cross_val_score(classifier, X, Y, cv=5)
+
+print "SCORES:"
+print scores
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+print
+print
