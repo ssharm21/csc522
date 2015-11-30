@@ -42,10 +42,6 @@ min_max_scaler = preprocessing.MinMaxScaler()
 x_scaled = min_max_scaler.fit_transform(np_points)
 
 pca = pickle.load(open("pca.bin", "rb"))
-print x_scaled.shape
-print pca.shape
-
 pca_features = pca.transform(x_scaled)
 print pca_features
-print
-print model.predict(x_scaled)
+print model.predict(pca_features)
