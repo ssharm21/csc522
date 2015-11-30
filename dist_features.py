@@ -39,8 +39,12 @@ print "Calculating distances"
 for row in all_points:
 	name = data["name"][all_points.index(row)]
 	dists = {"name": name}
-	for x,y in combinations(row, 2):
-		header = str(row.index(x)) + ":" + str(row.index(y))
+	for ai,bi in combinations(range(0,len(row)), 2):
+		x = row[ai]
+		y = row[bi]
+		if ai > bi:
+			ai,bi = bi,ai
+		header = str(ai) + ":" + str(bi)
 		dists[header] = distance.euclidean(np.array(x), np.array(y))
 	all_dists.append(dists)
 
@@ -50,9 +54,6 @@ all_dists = pd.DataFrame(all_dists)
 all_dists.to_csv("distance_data.csv")
 
 print all_dists
-'''
-
-'''
 print "Load the distance data"
 all_dists = pd.read_csv("distance_data.csv")
 
@@ -100,8 +101,11 @@ print "Load the comparison data"
 res_dict = pd.read_csv("compare_data.csv")
 
 np_points = res_dict.select_dtypes(exclude=["object", "int64"])
+print list(np_points.columns.values)
+print len(list(np_points.columns.values))
 
 np_points = np_points.as_matrix()
+print np_points.shape
 np_points = np.nan_to_num(np_points)
 min_max_scaler = preprocessing.MinMaxScaler()
 x_scaled = min_max_scaler.fit_transform(np_points)
@@ -110,8 +114,10 @@ x_scaled = min_max_scaler.fit_transform(np_points)
 #FROM THE SCREE PLOT, BEST n_components is 5
 pca = PCA(n_components=5)
 pca.fit(x_scaled)
+print x_scaled.shape
 pickle.dump(pca, open("pca.bin", "wb"))
 pca_features = pca.transform(x_scaled)
+print pca_features.shape
 
 
 X = []
@@ -153,9 +159,9 @@ print
 print
 
 
-#FROM POLYNOMIAL PARAMS, BEST degree=2 and coef0=0.6
+#FROM POLYNOMIAL PARAMS, BEST degree=2 and coef0=0.5
 print "KERNEL: polynomial"
-poly_classifier = svm.SVC(kernel="poly", degree=2, coef0=0.6, probability=True)
+poly_classifier = svm.SVC(kernel="poly", degree=2, coef0=0.5, probability=True)
 poly_classifier.fit(X, Y) 
 
 scores = cross_validation.cross_val_score(poly_classifier, X, Y, cv=5)
@@ -170,9 +176,9 @@ print
 print
 
 
-#FROM RBF PARAMS, BEST gamma = 0.05
+#FROM RBF PARAMS, BEST gamma = 0.08
 print "KERNEL: rbf"
-rbf_classifier = svm.SVC(kernel="rbf", gamma=0.05, probability=True)
+rbf_classifier = svm.SVC(kernel="rbf", gamma=0.08, probability=True)
 rbf_classifier.fit(X, Y) 
 
 scores = cross_validation.cross_val_score(rbf_classifier, X, Y, cv=5)
