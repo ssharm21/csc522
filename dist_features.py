@@ -12,6 +12,7 @@ from sklearn import cross_validation
 import matplotlib.patches as mpatches
 from sklearn.metrics import confusion_matrix
 from sklearn import base
+import pickle
 
 '''
 print "Reading the file"
@@ -277,3 +278,7 @@ plt.figure()
 plot_confusion_matrix(cm_normalized, title='Normalized confusion matrix')
 
 plt.show()
+
+
+#STORE THE RBF MODEL
+pickle.dump(rbf_classifier, open("rbf_model.bin", "wb"))
