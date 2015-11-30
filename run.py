@@ -1,6 +1,9 @@
 import pickle
 import cv2
 import stasm
+from itertools import combinations
+from scipy.spatial import distance
+import numpy as np
 from sklearn import preprocessing
 
 model = pickle.load(open("rbf_model.bin", "rb"))
@@ -33,7 +36,8 @@ final_dists = {}
 for key in neutral_dists.keys():
 	final_dists[key] = 100*(emotion_dists[key]-neutral_dists[key])/neutral_dists[key]
 
-np_points = final_dists.values()
+np_points = np.matrix(final_dists.values())
+np_points = np.nan_to_num(np_points)
 min_max_scaler = preprocessing.MinMaxScaler()
 x_scaled = min_max_scaler.fit_transform(np_points)
 
