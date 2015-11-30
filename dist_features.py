@@ -110,6 +110,7 @@ x_scaled = min_max_scaler.fit_transform(np_points)
 #FROM THE SCREE PLOT, BEST n_components is 5
 pca = PCA(n_components=5)
 pca.fit(x_scaled)
+pickle.dump(pca, open("pca.bin", "wb"))
 pca_features = pca.transform(x_scaled)
 
 
