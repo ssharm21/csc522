@@ -2,7 +2,7 @@ import os.path
 import cv2
 import stasm
 
-path = os.path.join(stasm.DATADIR, '/home/shivani/Pictures/cohn-kanade-images-extracted/S037_001_00000001.png')
+path = os.path.join(stasm.DATADIR, '/home/shivani/Pictures/cohn-kanade-images-extracted/S077_001_00000028.png')
 
 img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
