@@ -52,8 +52,8 @@ for row in all_points:
 print "Saving as csv"
 all_dists = pd.DataFrame(all_dists)
 all_dists.to_csv("distance_data.csv")
-
 print all_dists
+
 print "Load the distance data"
 all_dists = pd.read_csv("distance_data.csv")
 
@@ -76,10 +76,15 @@ for x in comp_dict.keys():
 	vals.remove(1)
 	item_a = comp_dict[x][1]
 	item_b = comp_dict[x][vals[0]]
-	for key in item_a.keys():
+	res_dict_item["list"] = []
+	s_keys = item_a.keys()
+	s_keys = sorted(s_keys)
+	for key in s_keys:
 		if isinstance(item_a[key], float):
-			if item_a[key] != 0:
-				res_dict_item[key] = 100*(item_b[key]-item_a[key])/item_a[key]
+			denom = item_a[key]
+			if denom == 0:
+				denom = 1.0
+			res_dict_item["list"].append(100*(item_b[key]-item_a[key])/denom)
 	res_dict.append(res_dict_item)
 
 print "Saving as csv"
@@ -100,11 +105,15 @@ for root, dirs, files in os.walk("Emotion/"):
 print "Load the comparison data"
 res_dict = pd.read_csv("compare_data.csv")
 
-np_points = res_dict.select_dtypes(exclude=["object", "int64"])
-print list(np_points.columns.values)
-print len(list(np_points.columns.values))
+#np_points = res_dict.select_dtypes(exclude=["object", "int64"])
+np_points = res_dict["list"]
+np_points = [eval(x) for x in np_points]
 
-np_points = np_points.as_matrix()
+ll = [len(x) for x in np_points]
+print list(set(ll))
+np_points = np.array(np_points)
+
+#np_points = np_points.as_matrix()
 print np_points.shape
 np_points = np.nan_to_num(np_points)
 min_max_scaler = preprocessing.MinMaxScaler()
