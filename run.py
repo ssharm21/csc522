@@ -47,7 +47,10 @@ for i in range(1, 8):
 			ind = np.where(res_dict["name"]==n)[0][0]
 			X.append(pca_features[ind])
 			Y.append(i)
-
+			if n == "S046_004":
+				print
+				print pca_features[ind]
+				print
 
 
 classifier = svm.SVC(kernel="rbf", gamma=0.08)
@@ -64,23 +67,34 @@ neutral_list = []
 for point in landmarks:
 	neutral_list.append([point[0], point[1]])
 neutral_dists = {}
-for x,y in combinations(neutral_list, 2):
-	header = str(neutral_list.index(x)) + ":" + str(neutral_list.index(y))
+for ai,bi in combinations(range(0,len(neutral_list)), 2):
+	x = neutral_list[ai]
+	y = neutral_list[bi]
+	if ai > bi:
+		ai,bi = bi,ai
+	header = str(ai) + ":" + str(bi)
 	neutral_dists[header] = distance.euclidean(np.array(x), np.array(y))
 
 landmarks = stasm.search_single(img_emotion)
 landmarks = stasm.force_points_into_image(landmarks, img_emotion)
+
 emotion_list = []
 for point in landmarks:
 	emotion_list.append([point[0], point[1]])
 emotion_dists = {}
-for x,y in combinations(emotion_list, 2):
-	header = str(emotion_list.index(x)) + ":" + str(emotion_list.index(y))
+for ai,bi in combinations(range(0,len(emotion_list)), 2):
+	x = emotion_list[ai]
+	y = emotion_list[bi]
+	if ai > bi:
+		ai,bi = bi,ai
+	header = str(ai) + ":" + str(bi)
 	emotion_dists[header] = distance.euclidean(np.array(x), np.array(y))
 
-final_dists = {}
-for key in neutral_dists.keys():
-	final_dists[key] = 100*(emotion_dists[key]-neutral_dists[key])/neutral_dists[key]
+final_dists = []
+s_keys = sorted(neutral_dists.keys())
+for key in s_keys:
+	final_dists.append(100*(emotion_dists[key]-neutral_dists[key])/neutral_dists[key])
+print final_dists
 
 np_points = np.matrix(final_dists.values())
 np_points = np.nan_to_num(np_points)
@@ -89,6 +103,9 @@ x_scaled = min_max_scaler.fit_transform(np_points)
 
 pca = pickle.load(open("pca.bin", "rb"))
 pca_features = pca.transform(x_scaled)
+print
+print pca_features
+print
 labels = {1: "anger", 2: "neutral", 3: "disgust", 4: "fear", 5: "happiness", 6: "sadness", 7:"surprise"}
 print "DETECTED EMOTION:"
 print labels[classifier.predict(pca_features)[0]]
