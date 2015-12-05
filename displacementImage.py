@@ -4,8 +4,8 @@ import stasm
 import math
 import numpy as np 
 
-path = os.path.join(stasm.DATADIR, '/home/shivani/Pictures/cohn-kanade-images-extracted/S077_001_00000001.png')
-path2 = os.path.join(stasm.DATADIR, '/home/shivani/Pictures/cohn-kanade-images-extracted/S077_001_00000028.png')
+path = os.path.join(stasm.DATADIR, '/home/shivani/Pictures/cohn-kanade-images-extracted/S052_001_00000001.png')
+path2 = os.path.join(stasm.DATADIR, '/home/shivani/Pictures/cohn-kanade-images-extracted/S052_001_00000015.png')
 img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 img2 = cv2.imread(path2,cv2.IMREAD_GRAYSCALE)
 if img is None:

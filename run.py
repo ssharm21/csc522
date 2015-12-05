@@ -15,22 +15,23 @@ model = pickle.load(open("rbf_model.bin", "rb"))
 
 emotions = {}
 for root, dirs, files in os.walk("Emotion/"):
-    path = root.split('/')
-    for _file in files:
-        text = open(("/").join(path) + "/" + _file, "r").read()
-        name = _file.split("_")[0] + "_" + _file.split("_")[1]
-        emotions[name] = int(text.split(".")[0])
+	path = root.split('/')
+	for _file in files:
+		text = open(("/").join(path) + "/" + _file, "r").read()
+		name = _file.split("_")[0] + "_" + _file.split("_")[1]
+		emotions[name] = int(text.split(".")[0])
 
 
 res_dict = pd.read_csv("compare_data.csv")
 
-np_points = res_dict.select_dtypes(exclude=["object", "int64"])
+np_points = res_dict["list"]
+np_points = [eval(x) for x in np_points]
 
-np_points = np_points.as_matrix()
+np_points = np.array(np_points)
 np_points = np.nan_to_num(np_points)
 min_max_scaler = preprocessing.MinMaxScaler()
-x_scaled = min_max_scaler.fit_transform(np_points)
-
+#x_scaled = min_max_scaler.fit_transform(np_points)
+x_scaled = np_points
 
 
 pca = PCA(n_components=5)
@@ -47,10 +48,10 @@ for i in range(1, 8):
 			ind = np.where(res_dict["name"]==n)[0][0]
 			X.append(pca_features[ind])
 			Y.append(i)
-			if n == "S046_004":
-				print
-				print pca_features[ind]
-				print
+			#if n == "S046_004":
+				#print
+				#print pca_features[ind]
+				#print
 
 
 classifier = svm.SVC(kernel="rbf", gamma=0.08)
@@ -94,18 +95,17 @@ final_dists = []
 s_keys = sorted(neutral_dists.keys())
 for key in s_keys:
 	final_dists.append(100*(emotion_dists[key]-neutral_dists[key])/neutral_dists[key])
-print final_dists
 
-np_points = np.matrix(final_dists.values())
+np_points = np.array([final_dists])
 np_points = np.nan_to_num(np_points)
 min_max_scaler = preprocessing.MinMaxScaler()
-x_scaled = min_max_scaler.fit_transform(np_points)
-
-pca = pickle.load(open("pca.bin", "rb"))
+#x_scaled = min_max_scaler.fit_transform(np_points)
+x_scaled = np_points
+#pca = pickle.load(open("pca.bin", "rb"))
 pca_features = pca.transform(x_scaled)
-print
-print pca_features
-print
+#print
+#print pca_features
+#print
 labels = {1: "anger", 2: "neutral", 3: "disgust", 4: "fear", 5: "happiness", 6: "sadness", 7:"surprise"}
 print "DETECTED EMOTION:"
 print labels[classifier.predict(pca_features)[0]]
